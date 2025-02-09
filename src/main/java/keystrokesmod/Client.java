@@ -3,7 +3,6 @@ package keystrokesmod;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import keystrokesmod.anticrack.AntiCrack;
 import keystrokesmod.event.client.PreTickEvent;
 import keystrokesmod.event.render.Render2DEvent;
 import keystrokesmod.eventbus.EventBus;
@@ -28,7 +27,6 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import tech.skidonion.obfuscator.annotations.NativeObfuscation;
 
 @Mod(
         modid = "keystrokes",
@@ -57,10 +55,6 @@ public final class Client {
 
     public static int moduleCounter;
     public static int settingCounter;
-
-    static {
-        AntiCrack.init();
-    }
 
     @EventHandler
     public void init(FMLInitializationEvent ignored) {
@@ -94,7 +88,6 @@ public final class Client {
         MoveableManager.init();
     }
 
-    @NativeObfuscation(obfuscated = false)
     @EventListener
     public void onTick(PreTickEvent event) {
         if (Utils.nullCheck()) {
@@ -129,7 +122,6 @@ public final class Client {
         }
     }
 
-    @NativeObfuscation(obfuscated = false)
     @EventListener
     public void onRender2D(Render2DEvent event) {
         try {
@@ -156,7 +148,6 @@ public final class Client {
         }
     }
 
-    @NativeObfuscation(obfuscated = false)
     public static KeySrokeRenderer getKeyStrokeRenderer() {
         return keySrokeRenderer;
     }

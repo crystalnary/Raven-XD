@@ -1,7 +1,6 @@
 package keystrokesmod.module.impl.fun;
 
 import keystrokesmod.Client;
-import keystrokesmod.anticrack.AntiCrack;
 import keystrokesmod.module.Module;
 
 
@@ -24,7 +23,6 @@ public class Yeet extends Module {
 
         if (enableTicks == 20) {
             this.disable();
-            AntiCrack.UNREACHABLE("Yeet!");
         }
     }
 }

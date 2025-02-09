@@ -1,6 +1,5 @@
 package keystrokesmod.module.impl.movement;
 
-import keystrokesmod.anticrack.AntiCrack;
 import keystrokesmod.event.player.JumpEvent;
 import keystrokesmod.event.player.PrePlayerInputEvent;
 import keystrokesmod.event.player.PreUpdateEvent;
@@ -63,7 +62,7 @@ public class TargetStrafe extends Module {
             case "While speed or fly":
                 return ModuleManager.speed.isEnabled() || ModuleManager.fly.isEnabled();
             default:
-                return AntiCrack.UNREACHABLE();
+                return false;
         }
     }
 

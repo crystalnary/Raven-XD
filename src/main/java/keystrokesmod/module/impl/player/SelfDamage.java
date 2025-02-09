@@ -1,6 +1,5 @@
 package keystrokesmod.module.impl.player;
 
-import keystrokesmod.anticrack.AntiCrack;
 import keystrokesmod.event.player.DamageEvent;
 import keystrokesmod.eventbus.annotations.EventListener;
 import keystrokesmod.module.Module;
@@ -56,8 +55,6 @@ public class SelfDamage extends Module {
                 repeatDelayTicks = (int) repeatDelay.getInput();
             }
         } else if (repeatDelayTicks != -1) {
-            if (repeatDelayTicks < 0)
-                AntiCrack.UNREACHABLE(repeatDelayTicks);
             repeatDelayTicks--;
         }
     }
