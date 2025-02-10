@@ -245,6 +245,8 @@ public class ModuleManager {
         this.addModule(autoWeb = new AutoWeb());
         this.addModule(chestAura = new ChestAura());
         this.addModule(selfDamage = new SelfDamage());
+        this.addModule(new Refill());
+        // this.addModule(new InstaHeal());
 
         // render
         this.addModule(ambience = new Ambience());
