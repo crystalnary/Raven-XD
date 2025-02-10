@@ -57,7 +57,6 @@ public class AutoHeal extends Module {
         if (System.currentTimeMillis() - lastHeal < healDelay.getInput()) return;
         if (noInventory.isToggled() && mc.currentScreen instanceof GuiInventory) return;
 
-
         switch (currentState) {
             case NONE:
                 if (mc.thePlayer.getHealth() <= minHealth.getInput()) {
@@ -70,7 +69,7 @@ public class AutoHeal extends Module {
 
                                 if (goldenHeadName.isToggled()) {
                                     String displayName = itemInSlot.getDisplayName().toLowerCase();
-                                    if ((displayName.contains("golden") && displayName.contains("head"))) {
+                                    if (displayName.contains("golden") && displayName.contains("head")) {
                                         toSlot = slot;
                                         break;
                                     }
@@ -100,12 +99,11 @@ public class AutoHeal extends Module {
                     ItemStack stack = SlotHandler.getHeldItem();
                     if (stack != null) {
                         mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, stack);
-                        lastSwitchTo = System.currentTimeMillis(); // Update for use duration check
+                        lastSwitchTo = System.currentTimeMillis();
                         currentState = State.USING;
                     } else {
-                        // Item wasn't found, reset.
                         currentState = State.NONE;
-                        lastHeal = System.currentTimeMillis(); // Prevent rapid retries
+                        lastHeal = System.currentTimeMillis();
                     }
                 }
                 break;
@@ -122,12 +120,13 @@ public class AutoHeal extends Module {
                 long totalDelay = (long) ((itemUseDuration * 50L) + useDelay.getInput());
 
                 if (System.currentTimeMillis() - lastSwitchTo >= totalDelay) {
-                    if (autoDrop.isToggled() && usingStack.getItem() instanceof ItemSoup) {
+                    if (autoDrop.isToggled()) {
                         mc.thePlayer.dropOneItem(true);
                     }
                     currentState = State.SWITCHING_BACK;
                 }
                 break;
+
             case SWITCHING_BACK:
                 if (originalSlot != -1) {
                     SlotHandler.setCurrentSlot(originalSlot);
