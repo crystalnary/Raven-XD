@@ -13,9 +13,9 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/QNVaUzHT?label=Modrinth%20Downloads&logo=Modrinth%20Downloads&style=flat-square)](https://modrinth.com/mod/cheatdetector)
 -->
 
-Raven B4, but for those who can't afford it.
+My fork of Raven-XD
 
-Raven B4, but not only for Hypixel.
+I basically do not know any of Forge API or Java, don't send armed men into my house because the code is bad.
 
 <a href="https://dsc.gg/ravenxd"><img src="https://invidget.switchblade.xyz/zSgDKArSH4" alt="https://dsc.gg/ravenxd"/></a><br>
 [QQ Group (645021103)](https://qm.qq.com/q/vv0xPdfc6A)
