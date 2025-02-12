@@ -83,7 +83,7 @@ public final class Client {
         Client.EVENT_BUS.register(profileManager);
 
         I18nManager.init();
-        AutoUpdate.init();
+        //AutoUpdate.init();
         EventDispatcher.init();
         MoveableManager.init();
     }
