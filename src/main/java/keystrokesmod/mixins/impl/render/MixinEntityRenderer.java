@@ -42,8 +42,8 @@ public abstract class MixinEntityRenderer {
      * @author strangerrrs
      * @reason for noHurtCam module
      */
-    @Overwrite
-    private void hurtCameraEffect(float p_hurtCameraEffect_1_) {
+    @Inject(method = "hurtCameraEffect", at = @At("HEAD"), cancellable = true)
+    private void hurtCameraEffect(float p_hurtCameraEffect_1_, CallbackInfo ci) {
         if (mc.getRenderViewEntity() instanceof EntityLivingBase) {
             EntityLivingBase entitylivingbase = (EntityLivingBase)mc.getRenderViewEntity();
             float f = (float)entitylivingbase.hurtTime - p_hurtCameraEffect_1_;
@@ -60,6 +60,7 @@ public abstract class MixinEntityRenderer {
             f /= (float)entitylivingbase.maxHurtTime;
             f = MathHelper.sin(f * f * f * f * 3.1415927F);
             f2 = entitylivingbase.attackedAtYaw;
+            ci.cancel();
             GlStateManager.rotate(-f2, 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-f * (ModuleManager.noHurtCam.isEnabled() ? (float) ModuleManager.noHurtCam.multiplier.getInput() : 14.0F), 0.0F, 0.0F, 1.0F);
             GlStateManager.rotate(f2, 0.0F, 1.0F, 0.0F);

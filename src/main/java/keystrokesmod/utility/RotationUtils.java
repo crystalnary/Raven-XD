@@ -401,4 +401,17 @@ public class RotationUtils {
 
         return startPos.add(xOffset, 0, zOffset);
     }
+
+    public static float[] getRotations(double x, double y, double z, Vec3 playerEyes) {
+        double diffX = x - playerEyes.xCoord;
+        double diffY = y - playerEyes.yCoord;
+        double diffZ = z - playerEyes.zCoord;
+
+        double dist = MathHelper.sqrt_double(diffX * diffX + diffZ * diffZ);
+
+        float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / Math.PI) - 90.0F;
+        float pitch = (float) -(Math.atan2(diffY, dist) * 180.0D / Math.PI);
+
+        return new float[]{yaw, pitch};
+    }
 }
