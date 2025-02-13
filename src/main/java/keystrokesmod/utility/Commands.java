@@ -125,9 +125,9 @@ public class Commands {
         } else {
             String closestCommand = findClosestCommand(commandName);
             if (closestCommand != null) {
-                print(INVALID_COMMAND + " Did you mean: &e" + closestCommand + "&c?", 1);
+                print(INVALID_COMMAND + " &e" + commandName + "&c. Did you mean: &e" + closestCommand + "&c?", 1);
             } else {
-                print(INVALID_COMMAND + " (" + (commandName.length() > 5 ? commandName.substring(0, 5) + "..." : commandName) + ")", 1);
+                print(INVALID_COMMAND + " &e" + (commandName.length() > 5 ? commandName.substring(0, 5) + "..." : commandName) + "&c.", 1);
             }
         }
     }
