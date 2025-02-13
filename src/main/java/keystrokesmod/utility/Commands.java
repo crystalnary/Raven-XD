@@ -45,7 +45,7 @@ public class Commands {
     private static int currentColorIndex = 0;
     private static int lastColorIndex = -1;
     public static List<String> recentMessages = new ArrayList<>();
-    private static final String INVALID_SYNTAX = "&cInvalid syntax.";
+    private static final String INVALID_SYNTAX_BASE = "&cInvalid syntax. Use: &e";
     private static final String INVALID_COMMAND = "&cInvalid command.";
 
     private static final Map<String, CommandHandler> commandHandlers = new HashMap<>();
@@ -123,13 +123,58 @@ public class Commands {
         if (handler != null) {
             handler.execute(args);
         } else {
-            print(INVALID_COMMAND + " (" + (commandName.length() > 5 ? commandName.substring(0, 5) + "..." : commandName) + ")", 1);
+            String closestCommand = findClosestCommand(commandName);
+            if (closestCommand != null) {
+                print(INVALID_COMMAND + " Did you mean: &e" + closestCommand + "&c?", 1);
+            } else {
+                print(INVALID_COMMAND + " (" + (commandName.length() > 5 ? commandName.substring(0, 5) + "..." : commandName) + ")", 1);
+            }
         }
+    }
+
+    private static String findClosestCommand(String input) {
+        String closest = null;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (String command : commandHandlers.keySet()) {
+            int distance = levenshteinDistance(input, command);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = command;
+            }
+        }
+
+        if (minDistance <= 2) {
+            return closest;
+        } else {
+            return null;
+        }
+    }
+
+    private static int levenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+
+        for (int i = 0; i <= s1.length(); i++) {
+            dp[i][0] = i;
+        }
+
+        for (int j = 0; j <= s2.length(); j++) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= s1.length(); i++) {
+            for (int j = 1; j <= s2.length(); j++) {
+                int cost = (s1.charAt(i - 1) == s2.charAt(j - 1)) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+
+        return dp[s1.length()][s2.length()];
     }
 
     private static void handleSetKey(List<String> args) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "setkey [key]", 1);
             return;
         }
 
@@ -147,7 +192,7 @@ public class Commands {
 
     private static void handleNick(List<String> args) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "nick [name/reset]", 1);
             return;
         }
 
@@ -164,7 +209,7 @@ public class Commands {
 
     private static void handleCName(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "cname [name]", 1);
             return;
         }
 
@@ -180,7 +225,7 @@ public class Commands {
 
     private static void handleFakeChat(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + FakeChat.command + " [msg]", 1);
             return;
         }
 
@@ -196,7 +241,7 @@ public class Commands {
 
     private static void handleDuels(List<String> args) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "duels [player]", 1);
             return;
         }
 
@@ -238,18 +283,22 @@ public class Commands {
 
     private static void handleModuleVisibility(List<String> args, boolean hide) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + (hide ? "hide" : "show") + " [module]", 1);
             return;
         }
 
         String moduleName = args.get(1).toLowerCase();
-        Client.getModuleManager().getModules().stream()
+        Optional<Module> targetModule = Client.getModuleManager().getModules().stream()
                 .filter(module -> module.getName().toLowerCase().replace(" ", "").equals(moduleName))
-                .findFirst()
-                .ifPresent(module -> {
-                    module.setHidden(hide);
-                    print("&a" + module.getName() + " is now " + (hide ? "hidden" : "visible") + " in HUD", 1);
-                });
+                .findFirst();
+
+        if (targetModule.isPresent()) {
+            Module module = targetModule.get();
+            module.setHidden(hide);
+            print("&a" + module.getName() + " is now " + (hide ? "hidden" : "visible") + " in HUD", 1);
+        } else {
+            print("&cModule not found.", 1);
+        }
     }
 
     private static void handlePanic(List<String> args) {
@@ -266,28 +315,31 @@ public class Commands {
 
     private static void handleRename(List<String> args) {
         if (args.size() != 3 && args.size() != 4) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "rename [module] [name] <info>", 1);
             return;
         }
         String moduleName = args.get(1).toLowerCase();
-        Client.getModuleManager().getModules().stream()
+        Optional<Module> targetModule = Client.getModuleManager().getModules().stream()
                 .filter(module -> module.getName().toLowerCase().replace(" ", "").equals(moduleName))
-                .findFirst().ifPresent(module -> {
-                    module.setPrettyName(args.get(2));
-                    if (args.size() == 4) {
-                        module.setPrettyInfo(args.get(3));
-                        print("&a'" + module.getName() + " " + module.getInfo() + "' is now called '" + module.getRawPrettyName() + " " + module.getRawPrettyInfo() + "'", 1);
-                    } else {
-                        print("&a" + module.getName() + " is now called " + module.getRawPrettyName(), 1);
-                    }
+                .findFirst();
 
-                });
+        if (targetModule.isPresent()) {
+            Module module = targetModule.get();
+            module.setPrettyName(args.get(2));
+            if (args.size() == 4) {
+                module.setPrettyInfo(args.get(3));
+                print("&a'" + module.getName() + " " + module.getInfo() + "' is now called '" + module.getRawPrettyName() + " " + module.getRawPrettyInfo() + "'", 1);
+            } else {
+                print("&a" + module.getName() + " is now called " + module.getRawPrettyName(), 1);
+            }
+        } else {
+            print("&cModule not found.", 1);
+        }
     }
-
 
     private static void handleSay(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "say [message]", 1);
             return;
         }
 
@@ -297,7 +349,7 @@ public class Commands {
 
     private static void handleClientName(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "clientname [name]", 1);
             return;
         }
 
@@ -307,7 +359,7 @@ public class Commands {
 
     private static void handleKillMessage(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "killmessage [message]", 1);
             return;
         }
 
@@ -317,7 +369,7 @@ public class Commands {
 
     private static void handleClientSpoofer(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "clientspoofer [brand]", 1);
             return;
         }
 
@@ -326,6 +378,10 @@ public class Commands {
     }
 
     private static void handleBinds(List<String> args) {
+        if (args.size() != 1) {
+            print(INVALID_SYNTAX_BASE + "binds", 1);
+            return;
+        }
         for (Module module : Client.getModuleManager().getModules()) {
             if (module.getKeycode() != 0) {
                 print(ChatFormatting.AQUA + module.getPrettyName() + ": " + Utils.getKeyName(module.getKeycode()), 1);
@@ -335,7 +391,7 @@ public class Commands {
 
     private static void handleBind(List<String> args) {
         if (args.size() != 3) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "bind [module] [key]", 1);
             return;
         }
 
@@ -361,7 +417,7 @@ public class Commands {
 
     private static void handleImport(List<String> args) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "import [module]", 1);
             return;
         }
 
@@ -392,7 +448,7 @@ public class Commands {
 
     private static void handleExport(List<String> args) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "export [module]", 1);
             return;
         }
 
@@ -425,7 +481,7 @@ public class Commands {
 
     private static void handleFriendEnemy(List<String> args, boolean friend) {
         if (args.size() != 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + (friend ? "friend" : "enemy") + " [name/clear/list]", 1);
             return;
         }
 
@@ -437,7 +493,7 @@ public class Commands {
             print("&a" + (friend ? "Friends" : "Enemies") + " cleared.", 1);
             return;
         } else if (action.equalsIgnoreCase("list")) {
-            print((friend ? "Friends" : "Enemies") + ":", 1);
+            print("&a" + (friend ? "Friends" : "Enemies") + ":", 1);
             if (list.isEmpty()) {
                 print("None", 0);
             } else {
@@ -483,7 +539,7 @@ public class Commands {
                 case "save":
                 case "s":
                     if (args.size() != 3) {
-                        print(INVALID_SYNTAX, 1);
+                        print(INVALID_SYNTAX_BASE + "profiles save [profile]", 1);
                         return;
                     }
                     String name = args.get(2);
@@ -500,7 +556,7 @@ public class Commands {
                 case "load":
                 case "l":
                     if (args.size() != 3) {
-                        print(INVALID_SYNTAX, 1);
+                        print(INVALID_SYNTAX_BASE + "profiles load [profile]", 1);
                         return;
                     }
                     String profileToLoad = args.get(2);
@@ -523,7 +579,7 @@ public class Commands {
                 case "remove":
                 case "r":
                     if (args.size() != 3) {
-                        print(INVALID_SYNTAX, 1);
+                        print(INVALID_SYNTAX_BASE + "profiles remove [profile]", 1);
                         return;
                     }
                     String profileToRemove = args.get(2);
@@ -537,14 +593,14 @@ public class Commands {
                     break;
 
                 default:
-                    print(INVALID_SYNTAX, 1);
+                    print(INVALID_SYNTAX_BASE + "profiles [save/load/remove] [profile]", 1);
             }
         }
     }
 
     private static void handleChat(List<String> args) {
         if (args.size() < 2) {
-            print(INVALID_SYNTAX, 1);
+            print(INVALID_SYNTAX_BASE + "chat <args>", 1);
             return;
         }
 
