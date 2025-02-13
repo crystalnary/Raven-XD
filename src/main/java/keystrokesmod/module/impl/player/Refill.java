@@ -35,27 +35,22 @@ public class Refill extends Module {
         noValidTickCounter = 0;
 
         if (countEmptyHotbarSlotsPlayer() == 0) {
-            addChatMessage("Refill complete: Hotbar is full.");
             this.disable();
             return;
         }
 
         if (!hasValidHealingItemsInPlayer()) {
-            addChatMessage("Refill complete: No healing items found in inventory.");
             this.disable();
             return;
         }
 
         if (!(mc.currentScreen instanceof GuiInventory))
             toggleInventory(true);
-
-        addChatMessage("Refill started. Please keep your inventory open until refill completes.");
     }
 
     @Override
     public void onDisable() {
         nextMoveTime = 0;
-        addChatMessage("Refill module disabled.");
 
         if (mc.currentScreen instanceof GuiInventory)
             mc.thePlayer.closeScreen();
@@ -68,7 +63,6 @@ public class Refill extends Module {
         }
 
         if (!(mc.currentScreen instanceof GuiInventory)) {
-            addChatMessage("Refill paused. Open your inventory to continue.");
             return;
         }
 
@@ -78,7 +72,6 @@ public class Refill extends Module {
         }
 
         if (countEmptyHotbarSlots(container) == 0) {
-            addChatMessage("Refill complete: Hotbar is full.");
             this.disable();
             return;
         }
@@ -92,7 +85,6 @@ public class Refill extends Module {
             noValidTickCounter++;
             int NO_VALID_THRESHOLD = 5;
             if (noValidTickCounter >= NO_VALID_THRESHOLD) {
-                addChatMessage("Refill complete: No valid items found in inventory.");
                 this.disable();
             }
             return;
@@ -185,9 +177,5 @@ public class Refill extends Module {
         KeyBinding.setKeyBindState(inventoryKeyCode, true);
         KeyBinding.onTick(inventoryKeyCode);
         KeyBinding.setKeyBindState(inventoryKeyCode, false);
-    }
-
-    private void addChatMessage(String txt) {
-        mc.thePlayer.addChatMessage(new ChatComponentText(Utils.formatColor(txt)));
     }
 }
