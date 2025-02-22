@@ -347,7 +347,7 @@ public class KillAura extends IAutoClicker {
             return;
         }
         boolean swingWhileBlocking = !silentSwing.isToggled() || !block.get();
-        if (swing && attack && HitSelect.canSwing()) {
+        if (swing && attack) {
             if (swingWhileBlocking) {
                 mc.thePlayer.swingItem();
                 RecordClick.click();

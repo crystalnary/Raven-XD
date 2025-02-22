@@ -88,6 +88,7 @@ public class AutoClicker extends IAutoClicker {
             }
 
             Utils.sendClick(0, true);
+            HitSelect.registerAttack();
             return true;
         } else if (inventoryFill.isToggled() && mc.currentScreen instanceof GuiContainer) {
             inventoryClick = true;
