@@ -7,6 +7,7 @@ import keystrokesmod.module.ModuleManager;
 import keystrokesmod.module.impl.movement.NoSlow;
 import keystrokesmod.module.impl.other.RotationHandler;
 import keystrokesmod.utility.RotationUtils;
+import keystrokesmod.utility.Utils;
 import keystrokesmod.utility.movement.Direction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -300,14 +301,13 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
         float minValueToSprint = 0.8F;
         boolean playerCanSprint = this.movementInput.moveForward >= minValueToSprint;
 
-        // no slow
         @SuppressWarnings("EqualsBetweenInconvertibleTypes")
         final boolean autoBlocking = ModuleManager.killAura != null
                 && ModuleManager.killAura.isEnabled()
                 && ModuleManager.killAura.block.get()
                 && Objects.equals(this, Minecraft.getMinecraft().thePlayer)
                 && ModuleManager.killAura.autoBlockMode.getInput() != 0;
-        final boolean usingItemModified = this.isUsingItem() || autoBlocking;
+        final boolean usingItemModified = this.isUsingItem();
 
         SprintEvent event = new SprintEvent(true);
         Client.EVENT_BUS.post(event);
@@ -317,13 +317,13 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
             stopSprint = !(ModuleManager.noSlow != null && ModuleManager.noSlow.isEnabled()
                     && NoSlow.getForwardSlowed() > 0.8);
         }
-        if (!stopSprint && autoBlocking) {
+        if (!stopSprint) {
             stopSprint = ModuleManager.killAura.slowdown.getInput() <= 0.8;
         }
 
         if (usingItemModified && !this.isRiding()) {
-            this.movementInput.moveStrafe *= autoBlocking ? (float) ModuleManager.killAura.slowdown.getInput() : NoSlow.getStrafeSlowed();
-            this.movementInput.moveForward *= autoBlocking ? (float) ModuleManager.killAura.slowdown.getInput() : NoSlow.getForwardSlowed();
+            this.movementInput.moveStrafe *= 0.2f;
+            this.movementInput.moveForward *= 0.2f;
             if (stopSprint) {
                 this.sprintToggleTimer = 0;
             }
