@@ -261,9 +261,9 @@ public final class Utils {
     public static void attackEntity(Entity e, boolean clientSwing) {
         boolean attack = HitSelect.canAttack();
         if (clientSwing) {
-            if (attack || HitSelect.canSwing()) mc.thePlayer.swingItem();
+            if (attack) mc.thePlayer.swingItem();
         } else {
-            if (attack || HitSelect.canSwing()) mc.thePlayer.sendQueue.addToSendQueue(new C0APacketAnimation());
+            if (attack) mc.thePlayer.sendQueue.addToSendQueue(new C0APacketAnimation());
         }
         if (attack) {
             mc.playerController.attackEntity(mc.thePlayer, e);

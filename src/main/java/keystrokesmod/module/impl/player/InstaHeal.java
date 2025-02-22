@@ -4,8 +4,9 @@ import keystrokesmod.eventbus.annotations.EventListener;
 import keystrokesmod.event.render.Render2DEvent;
 import keystrokesmod.module.Module;
 import keystrokesmod.module.impl.other.SlotHandler;
+import keystrokesmod.module.setting.impl.ButtonSetting;
 import keystrokesmod.module.setting.impl.DescriptionSetting;
-import keystrokesmod.module.setting.impl.SliderSetting;
+import keystrokesmod.module.setting.impl.ModeSetting;
 import keystrokesmod.utility.ContainerUtils;
 import keystrokesmod.utility.Utils;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -16,8 +17,8 @@ import net.minecraft.potion.PotionEffect;
 import java.util.List;
 
 public class InstaHeal extends Module {
-    private final SliderSetting mode;
-    private final SliderSetting wastePercentage;
+    private final ModeSetting mode;
+    private final ButtonSetting autoDrop;
 
     private int itemsToUse;
     private int originalSlot = -1;
@@ -36,8 +37,8 @@ public class InstaHeal extends Module {
     public InstaHeal() {
         super("InstaHeal", Module.category.player);
         this.registerSetting(new DescriptionSetting("Optimizes healing items usage."));
-        this.registerSetting(mode = new SliderSetting("Mode", 0, 0, 1, 1));
-        this.registerSetting(wastePercentage = new SliderSetting("Waste %", 60, 0, 100, 1));
+        this.registerSetting(mode = new ModeSetting("Mode", new String[]{"Soup", "Potion"}, 0));
+        this.registerSetting(autoDrop = new ButtonSetting("Drop", false));
     }
 
     @Override
@@ -92,29 +93,8 @@ public class InstaHeal extends Module {
         if (needed <= 0) return 0;
 
         int maxItemsAvailable = mc.thePlayer.inventory.getStackInSlot(targetSlot).stackSize;
-        int bestN = 0;
-        float allowedWaste = (float) wastePercentage.getInput();
-
-        for (int n = 1; n <= maxItemsAvailable; n++) {
-            float totalHeal = n * healPerItem;
-            if (totalHeal >= needed && (totalHeal - needed) / totalHeal * 100 <= allowedWaste) {
-                bestN = n;
-                break;
-            }
-        }
-
-        if (bestN == 0) {
-            float bestEffective = 0;
-            for (int n = 1; n <= maxItemsAvailable; n++) {
-                float totalHeal = n * healPerItem;
-                float effective = Math.min(totalHeal, needed);
-                float waste = (totalHeal - effective) / totalHeal * 100;
-                if (waste <= allowedWaste && effective > bestEffective) {
-                    bestEffective = effective;
-                    bestN = n;
-                }
-            }
-        }
+        int required = (int) Math.ceil(needed / healPerItem);
+        int bestN = Math.min(required, maxItemsAvailable);
 
         return bestN;
     }
@@ -139,12 +119,14 @@ public class InstaHeal extends Module {
             case USING:
                 if (elapsed >= 50) {
                     ItemStack stack = SlotHandler.getHeldItem();
-                    // If the stack is null or invalid, decrement the count to keep using the next items
                     if (stack == null || !isValidItem(stack)) {
                         itemsToUse--;
                     } else {
                         mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, stack);
                         itemsToUse--;
+                        if (autoDrop.isToggled()) {
+                            mc.thePlayer.dropOneItem(true);
+                        }
                     }
                     lastActionTime = currentTime;
                 }
